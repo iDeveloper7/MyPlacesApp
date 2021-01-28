@@ -9,9 +9,7 @@ import UIKit
 
 class MainTableViewController: UITableViewController {
     
-//    let restaurantNames = ["Балкан Гриль", "Бочка", "Вкусные истории", "Дастархан", "Индокитай", "Классик", "Шок", "Bonsai", "Burger Heroes", "Kitchen", "Love&Life", "Morris Pub", "Sherlock Holmes", "Speak Easy", "X.O"]
-    
-    let places = PlaceModel.getPlaces()
+    var places = PlaceModel.getPlaces()
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -24,14 +22,20 @@ class MainTableViewController: UITableViewController {
         return places.count
     }
 
-    
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: "Cell", for: indexPath) as! CustomTableViewCell
 
-        cell.imageOfPlace.image = UIImage(named: "\(places[indexPath.row].image)")
         cell.nameLabel.text = places[indexPath.row].name
         cell.locationLabel.text = places[indexPath.row].location
         cell.typeLabel.text = places[indexPath.row].type
+        
+        if places[indexPath.row].image == nil{
+            cell.imageOfPlace.image = UIImage(named: "\(places[indexPath.row].restaurantImage!)")
+        } else{
+            cell.imageOfPlace.image = places[indexPath.row].image
+        }
+        
+        
         cell.imageOfPlace.layer.cornerRadius = cell.imageOfPlace.frame.size.height / 2
         cell.imageOfPlace.clipsToBounds = true
         return cell
@@ -49,5 +53,12 @@ class MainTableViewController: UITableViewController {
     }
     */
     
-    @IBAction func cancelAction(_ segue: UIStoryboardSegue){}
+    @IBAction func unwindSegue(_ segue: UIStoryboardSegue){
+        
+        guard let newPlaceVC = segue.source as? NewPlaceTableViewController else { return }
+        newPlaceVC.saveNewPlace()
+        guard let newPlaces = newPlaceVC.newPlace else { return }
+        places.append(newPlaces)
+        tableView.reloadData()
+    }
 }
