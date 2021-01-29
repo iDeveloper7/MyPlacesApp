@@ -9,7 +9,8 @@ import UIKit
 
 class NewPlaceTableViewController: UITableViewController, UINavigationControllerDelegate {
     
-    var newPlace: PlaceModel?
+    var newPlace = PlaceModel()
+    var imageIsChanged = false
     
     @IBOutlet weak var saveButton: UIBarButtonItem!
     @IBOutlet weak var nameTextField: UITextField!
@@ -19,10 +20,8 @@ class NewPlaceTableViewController: UITableViewController, UINavigationController
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        
         saveButton.isEnabled = false //не доступно нажатие кнопки по умолчанию
-        
-        nameTextField.addTarget(self, action: #selector(textFieldChanged), for: .editingChanged)
+        nameTextField.addTarget(self, action: #selector(textFieldChanged), for: .editingChanged) //при внесении изменений в текстовое поле name будет срабатывать метод
         
         NotificationCenter.default.addObserver(forName: UIResponder.keyboardWillShowNotification, object: nil, queue: nil) { (nc) in
             self.view.frame.origin.y = -100 //поднимает view.frame на 100 поинтов при появлении клавиатуры
@@ -64,14 +63,22 @@ class NewPlaceTableViewController: UITableViewController, UINavigationController
     }
     
     func saveNewPlace(){
+        
+        var image: UIImage?
+        
+        if imageIsChanged == true{ //если пользователь использует свое изображение, то
+            image = imageOfPlace.image
+        } else{ //если картинка не загружена пользователем
+            image = #imageLiteral(resourceName: "imagePlaceholder")
+        }
+        
         guard let name = nameTextField.text else { return }
-        newPlace = PlaceModel(name: name, location: locationTextField.text, type: typeTextField.text, image: imageOfPlace.image, restaurantImage: nil)
+//        newPlace = PlaceModel(name: name, location: locationTextField.text, type: typeTextField.text, image: image, restaurantImage: nil)
     }
     
     @IBAction func cancelAction(_ sender: UIBarButtonItem) {
         dismiss(animated: true, completion: nil)
     }
-    
     
 }
     //MARK: - text field delegate
@@ -112,6 +119,7 @@ extension NewPlaceTableViewController: UIImagePickerControllerDelegate{
         imageOfPlace.image = info[.editedImage] as? UIImage //присваиваем отредактированное изображение нашему аутлету
         imageOfPlace.contentMode = .scaleAspectFill //масштабируем изображение по содержимому uiimage
         imageOfPlace.clipsToBounds = true //обрезаем изображение по границе uiimage
+        imageIsChanged = true //пользователь использует свое изображение
         dismiss(animated: true, completion: nil)
     }
 }

@@ -6,26 +6,30 @@
 //
 
 import UIKit
+import RealmSwift
 
-struct PlaceModel {
+class PlaceModel: Object {
     
-    var name: String
-    var location: String?
-    var type: String?
-    var image: UIImage?
-    var restaurantImage: String?
+    @objc dynamic var name: String = ""
+    @objc dynamic var location: String?
+    @objc dynamic var type: String?
+    @objc dynamic var imageData: Data?
     
-    static let restaurantImage = ["Балкан Гриль", "Бочка", "Вкусные истории", "Дастархан", "Индокитай", "Классик", "Шок", "Bonsai", "Burger Heroes", "Kitchen", "Love&Life", "Morris Pub", "Sherlock Holmes", "Speak Easy", "X.O"]
+    let restaurantImage = ["Балкан Гриль", "Бочка", "Вкусные истории", "Дастархан", "Индокитай", "Классик", "Шок", "Bonsai", "Burger Heroes", "Kitchen", "Love&Life", "Morris Pub", "Sherlock Holmes", "Speak Easy", "X.O"]
     
-    static func getPlaces() -> [PlaceModel]{
-        
-        var places = [PlaceModel]()
-        
+    func savePlaces() {
+                
         for place in restaurantImage{
-            places.append(PlaceModel(name: place, location: "Уфа", type: "Ресторан", image: nil, restaurantImage: place))
+            
+            let image = UIImage(named: place)
+            guard let imageData = image?.pngData() else { return } //записываем image в формат Data для сохр в realm
+            let newPlace = PlaceModel()
+            newPlace.name = place
+            newPlace.location = "Москва"
+            newPlace.type = "Ресторан"
+            newPlace.imageData = imageData
+            
+            StorageManager.saveObject(newPlace)
         }
-        return places
     }
-    
-    
 }
