@@ -9,9 +9,11 @@ import UIKit
 
 class NewPlaceTableViewController: UITableViewController, UINavigationControllerDelegate {
     
+    var currentPlace: PlaceModel? //в это свойство передаем текущие значения ячейки при ее редактировании
     var imageIsChanged = false
     
     @IBOutlet weak var saveButton: UIBarButtonItem!
+    
     @IBOutlet weak var nameTextField: UITextField!
     @IBOutlet weak var locationTextField: UITextField!
     @IBOutlet weak var typeTextField: UITextField!
@@ -19,7 +21,7 @@ class NewPlaceTableViewController: UITableViewController, UINavigationController
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        saveButton.isEnabled = false //не доступно нажатие кнопки по умолчанию
+        saveButton.isEnabled = false //не доступно нажатие кнопки "Сохранить" по умолчанию
         nameTextField.addTarget(self, action: #selector(textFieldChanged), for: .editingChanged) //при внесении изменений в текстовое поле name будет срабатывать метод
         
         NotificationCenter.default.addObserver(forName: UIResponder.keyboardWillShowNotification, object: nil, queue: nil) { (nc) in
@@ -29,8 +31,9 @@ class NewPlaceTableViewController: UITableViewController, UINavigationController
             self.view.frame.origin.y = 0 //опускает на место view.frame при сворачивании клавиатуры
         }
         tableView.tableFooterView = UIView() //убираем разлиновку пустых строк таблицы под последней ячейкой
+        
+        setupEditScreen()
     }
-    
     
     //MARK: - table view delegate
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
@@ -61,7 +64,7 @@ class NewPlaceTableViewController: UITableViewController, UINavigationController
         }
     }
     
-    func saveNewPlace(){
+    func savePlace(){
                 
         var image: UIImage?
         
@@ -76,13 +79,40 @@ class NewPlaceTableViewController: UITableViewController, UINavigationController
         guard let name = nameTextField.text else { return }
         let newPlace = PlaceModel(name: name, location: locationTextField.text, type: typeTextField.text, imageData: imageData)
         
-        StorageManager.saveObject(newPlace)
+        if currentPlace != nil{ //если мы изменяем данные в ячейке и пришли данные в currentPlace
+            try! realm.write{ //то перезаписываем их в базу
+                currentPlace?.name = newPlace.name
+                currentPlace?.location = newPlace.location
+                currentPlace?.type = newPlace.type
+                currentPlace?.imageData = newPlace.imageData
+            }
+        } else { //если нет данных в currentPlace
+            StorageManager.saveObject(newPlace) //то сохраняем новые данные в базу
+        }
+    }
+    //будет применено только в случае редактирования записи
+    private func setupEditScreen(){
+        if currentPlace != nil{
+            setupNavigationBar()
+            imageIsChanged = true
+            nameTextField.text = currentPlace?.name
+            locationTextField.text = currentPlace?.location
+            typeTextField.text = currentPlace?.type
+            guard let data = currentPlace?.imageData, let image = UIImage(data: data) else { return }
+            imageOfPlace.image = image
+            imageOfPlace.contentMode = .scaleAspectFill
+        }
+    }
+    //Навигационная панель в редактируемом NewPlaceTableViewController
+    private func setupNavigationBar(){
+        navigationItem.leftBarButtonItem = nil //убираем кнопку "Отмена"
+        title = currentPlace?.name //зададим заголовок с текущем названием заведения
+        saveButton.isEnabled = true //делаем активной кнопку "Сохранить"
     }
     
     @IBAction func cancelAction(_ sender: UIBarButtonItem) {
         dismiss(animated: true, completion: nil)
     }
-    
 }
     //MARK: - text field delegate
 extension NewPlaceTableViewController: UITextFieldDelegate{

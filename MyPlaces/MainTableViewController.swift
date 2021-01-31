@@ -56,22 +56,20 @@ class MainTableViewController: UITableViewController {
             tableView.deleteRows(at: [indexPath], with: .automatic)
     }
     
-    
-/*
-    // MARK: - Navigation
-
-    // In a storyboard-based application, you will often want to do a little preparation before navigation
+     //MARK: - Navigation
+    //передаем данные в NewPlaceTableViewController в случае редактирования записи
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
-        // Get the new view controller using segue.destination.
-        // Pass the selected object to the new view controller.
+        if segue.identifier == "ShowDetail"{ //если переход на NewPlaceTableViewController происходит по данному идентификатору
+            guard let indexPath = tableView.indexPathForSelectedRow else { return } //определяем индекс текущей строки
+            let place = places[indexPath.row]
+            let newPlaceVC = segue.destination as! NewPlaceTableViewController
+            newPlaceVC.currentPlace = place
+        }
     }
-    */
-    
+    //принимаем данные из NewPlaceTableViewController
     @IBAction func unwindSegue(_ segue: UIStoryboardSegue){
-        
         guard let newPlaceVC = segue.source as? NewPlaceTableViewController else { return }
-        newPlaceVC.saveNewPlace()
-
+        newPlaceVC.savePlace()
         tableView.reloadData()
     }
 }
