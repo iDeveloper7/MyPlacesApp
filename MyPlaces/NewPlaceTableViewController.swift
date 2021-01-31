@@ -9,7 +9,6 @@ import UIKit
 
 class NewPlaceTableViewController: UITableViewController, UINavigationControllerDelegate {
     
-    var newPlace = PlaceModel()
     var imageIsChanged = false
     
     @IBOutlet weak var saveButton: UIBarButtonItem!
@@ -63,7 +62,7 @@ class NewPlaceTableViewController: UITableViewController, UINavigationController
     }
     
     func saveNewPlace(){
-        
+                
         var image: UIImage?
         
         if imageIsChanged == true{ //если пользователь использует свое изображение, то
@@ -72,8 +71,12 @@ class NewPlaceTableViewController: UITableViewController, UINavigationController
             image = #imageLiteral(resourceName: "imagePlaceholder")
         }
         
+        let imageData = image?.pngData() //из uiimage в data
+        
         guard let name = nameTextField.text else { return }
-//        newPlace = PlaceModel(name: name, location: locationTextField.text, type: typeTextField.text, image: image, restaurantImage: nil)
+        let newPlace = PlaceModel(name: name, location: locationTextField.text, type: typeTextField.text, imageData: imageData)
+        
+        StorageManager.saveObject(newPlace)
     }
     
     @IBAction func cancelAction(_ sender: UIBarButtonItem) {
