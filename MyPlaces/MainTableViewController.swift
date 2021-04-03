@@ -32,12 +32,6 @@ class MainTableViewController: UITableViewController {
         cell.locationLabel.text = place.location
         cell.typeLabel.text = place.type
         cell.imageOfPlace.image = UIImage(data: place.imageData!) //св-во не будет nil
-
-//        if place.imageData == nil{
-//            print("imageData = nil")
-//        } else {
-//            cell.imageOfPlace.image = UIImage(data: place.imageData!)
-//        }
         
         cell.imageOfPlace.layer.cornerRadius = cell.imageOfPlace.frame.size.height / 2
         cell.imageOfPlace.clipsToBounds = true
